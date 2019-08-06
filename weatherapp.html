@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+</head>
+
+<body>
+    <style>
+        #demo1 {
+            color: #f16051;
+        }
+    </style>
+    <section>
+        <div class="container-fluid text-center">
+            <br />
+            <!-- <h1><button class="btn btn-danger" onclick="getLocation()">Click Me To Get Your Location!</button></h1> -->
+            <div> Temperature in your location:
+                <h1 class="text-primary" id="demo1"></h1>
+            </div>
+            <br />
+            <h1 class="text-primary" id="demo"></h1>
+        </div>
+    </section>
+
+    <script>
+        var x = document.getElementById("demo");
+        var y = document.getElementById("demo1");
+        window.onload = getLocation();
+        //window.onload=getWeather();
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition, showError);
+            } else {
+                x.innerHTML = "Geolocation is not supported by this browser.";
+            }
+        }
+        //Location For Display
+        function showPosition(position) {
+            var loc = { lat: position.coords.latitude, lon: position.coords.longitude };
+            getWeather(loc);
+            var baseURL = "https://maps.googleapis.com/maps/api/geocode/json?latlng=";
+            var fullURL = baseURL + loc.lat + "," + loc.lon;
+            $.ajax({
+                url: fullURL,
+                success: function (display) {
+                    x.innerHTML = display.results[1].formatted_address;
+                }
+            });
+
+        }
+        //Location For Weather
+        /* function getWeather(loc) {
+            var baseURL = "http://api.openweathermap.org/data/2.5/weather?lat=";
+            var appid = "de959b29fec0aeae11d81a75a4a635cf";
+            var fullURL = baseURL + loc.lat + "&lon=" + loc.lon + "&appid=" + appid + "&units=metric";
+        
+            //http://api.openweathermap.org/data/2.5/weather?lat=21.2600668&lon=81.5989561&appid=064129b86c99c35c42d531db251b99e3&units=metric
+            $.ajax({
+                url: fullURL,
+                success: function (display1) {
+                    y.innerHTML = display1.main.temp;
+                }
+            });
+        }  */
+
+/*         A better alternative is to user jQuery.param 
+            to build the query string from an object instead as 
+                it's easier to read and thus less error prone.
+ */
+
+
+        function getWeather(loc) {
+            var baseURL = "http://api.openweathermap.org/data/2.5/weather?";
+            return $.ajax({
+                url: baseURL + $.param({
+                    appid: "de959b29fec0aeae11d81a75a4a635cf",
+                    lon: loc.lon,
+                    lat: loc.lat,
+                    units: "metric"
+                }),
+                success: function (display1) {
+                    y.innerHTML = display1.main.temp;
+                }
+            });
+        }
+
+        function showError(error) {
+            switch (error.code) {
+                case error.PERMISSION_DENIED:
+                    x.innerHTML = "User denied the request for Geolocation."
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    x.innerHTML = "Location information is unavailable."
+                    break;
+                case error.TIMEOUT:
+                    x.innerHTML = "The request to get user location timed out."
+                    break;
+                case error.UNKNOWN_ERROR:
+                    x.innerHTML = "An unknown error occurred."
+                    break;
+            }
+        }
+
+    </script>
+</body>
+
+</html>
